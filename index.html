@@ -778,6 +778,39 @@
       margin-bottom: 16px;
     }
 
+    .pet-name-edit {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #fff6ec;
+      border: 2px dashed #fbcba4;
+      border-radius: 40px;
+      padding: 6px 16px;
+      margin-bottom: 16px;
+    }
+
+    .pet-name-edit-label {
+      font-size: 14px;
+      font-weight: 700;
+      color: #b08663;
+      white-space: nowrap;
+    }
+
+    .pet-name-edit input {
+      flex: 1;
+      min-width: 0;
+      background: transparent;
+      border: none;
+      outline: none;
+      font-size: 16px;
+      font-weight: 600;
+      color: #694d39;
+      padding: 8px 0;
+      font-family: inherit;
+    }
+
+    .pet-name-edit input::placeholder { color: #dbb9a0; font-weight: 400; }
+
     .icon-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -934,8 +967,12 @@
   <!-- 图标选择弹窗 -->
   <div class="icon-picker-overlay" id="iconPickerOverlay" style="display: none;">
     <div class="icon-picker-modal">
-      <h3>🎨 选一个蛙蛙图标</h3>
-      <div class="icon-picker-sub">蝴蝶结、花纹、礼帽各有不同～</div>
+      <h3>✏️ 编辑蛙蛙</h3>
+      <div class="icon-picker-sub">改个名字，再挑个喜欢的图标～</div>
+      <div class="pet-name-edit">
+        <span class="pet-name-edit-label">🐸 名字</span>
+        <input type="text" id="petNameInput" maxlength="12" placeholder="给蛙蛙起个名字">
+      </div>
       <div class="icon-grid" id="iconGrid"></div>
       <div class="icon-picker-actions">
         <button class="cancel-btn" id="cancelIconPick">取消</button>
@@ -1025,6 +1062,7 @@
       const noteInput = document.getElementById('noteInput');
       const saveBtn = document.getElementById('saveBtn');
       const iconPickerOverlay = document.getElementById('iconPickerOverlay');
+      const petNameInput = document.getElementById('petNameInput');
       const iconGrid = document.getElementById('iconGrid');
       const cancelIconPick = document.getElementById('cancelIconPick');
       const confirmIconPick = document.getElementById('confirmIconPick');
@@ -1154,8 +1192,10 @@
         pickingPetId = petId;
         const pet = pets.find(p => p.id === petId);
         tempSelectedIconId = pet ? pet.iconId : 'frog_basic';
+        petNameInput.value = pet ? pet.name : '';
         renderIconGrid();
         iconPickerOverlay.style.display = 'flex';
+        setTimeout(() => petNameInput.focus(), 50);
       }
 
       function renderIconGrid() {
@@ -1188,14 +1228,25 @@
         if (!pickingPetId || !tempSelectedIconId) return;
         const pet = pets.find(p => p.id === pickingPetId);
         if (pet) {
+          const newName = petNameInput.value.trim();
+          if (!newName) {
+            showToast('名字不能为空哦～');
+            petNameInput.focus();
+            return;
+          }
+          pet.name = newName;
           pet.iconId = tempSelectedIconId;
           renderPetSelector();
           saveToStorage();
-          showToast('🎨 图标更新啦！');
+          showToast('✨ 蛙蛙信息更新啦！');
           if (currentView === 'overview') renderOverviewPanel();
         }
         closeIconPicker();
       }
+
+      petNameInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') confirmIconPickHandler();
+      });
 
       cancelIconPick.addEventListener('click', closeIconPicker);
       confirmIconPick.addEventListener('click', confirmIconPickHandler);
@@ -1214,7 +1265,7 @@
               ${renderIconHTML(pet.iconId)}
             </div>
             <span class="pet-name">${pet.name}</span>
-            <span class="edit-icon" data-pet-id="${pet.id}" title="更换图标">✎</span>
+            <span class="edit-icon" data-pet-id="${pet.id}" title="点击编辑名字和图标">✎</span>
             <span class="delete-icon" data-pet-id="${pet.id}" title="删除这只蛙">🗑</span>
           `;
           tab.addEventListener('click', (e) => {
