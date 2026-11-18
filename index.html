@@ -927,12 +927,8 @@
       <div class="overview-list" id="overviewList"></div>
     </div>
 
-    <!-- 保存按钮（打卡视图下显示） -->
-    <button class="save-btn" id="saveBtn"><span>📝</span> 保存打卡</button>
-
-    <div class="footer-actions">
-      <button class="clear-history" id="clearAll">🗑️ 清空当前蛙全部记录</button>
-    </div>
+    <!-- 清空按钮（打卡视图下显示） -->
+    <button class="save-btn" id="saveBtn"><span>🗑️</span> 清空当前蛙全部记录</button>
   </div>
 
   <!-- 图标选择弹窗 -->
@@ -1028,7 +1024,6 @@
       const quickActionsDiv = document.getElementById('quickActions');
       const noteInput = document.getElementById('noteInput');
       const saveBtn = document.getElementById('saveBtn');
-      const clearAllBtn = document.getElementById('clearAll');
       const iconPickerOverlay = document.getElementById('iconPickerOverlay');
       const iconGrid = document.getElementById('iconGrid');
       const cancelIconPick = document.getElementById('cancelIconPick');
@@ -1518,24 +1513,6 @@
         });
       }
 
-      function saveCurrentDay() {
-        if (!selectedDateStr) selectedDateStr = getTodayStr();
-        const rec = records[currentPetId]?.[selectedDateStr];
-        if (!rec || Object.keys(rec).length === 0 ||
-            (Object.keys(rec).length === 1 && rec.note !== undefined && rec.note.trim() === '')) {
-          if (rec && rec.note && rec.note.trim() === '' && Object.keys(rec).length === 1) {
-            delete records[currentPetId][selectedDateStr];
-          }
-          if (!records[currentPetId]?.[selectedDateStr]) {
-            showToast('🐸 选点什么再保存吧～');
-            return;
-          }
-        }
-        saveToStorage();
-        renderCalendar();
-        showToast('✅ 已保存到日历！');
-      }
-
       function goToPrevMonth() {
         if (currentMonth === 0) { currentYear--; currentMonth = 11; } else { currentMonth--; }
         if (selectedDateStr) {
@@ -1607,8 +1584,7 @@
 
         prevMonthBtn.addEventListener('click', goToPrevMonth);
         nextMonthBtn.addEventListener('click', goToNextMonth);
-        saveBtn.addEventListener('click', saveCurrentDay);
-        clearAllBtn.addEventListener('click', clearAllRecordsForCurrentPet);
+        saveBtn.addEventListener('click', clearAllRecordsForCurrentPet);
       }
 
       init();
