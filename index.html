@@ -228,6 +228,27 @@
     .pet-tab .edit-icon:hover { background: #ffe0c4; }
     .pet-tab.active .edit-icon { background: #ffeacb; border-color: #e0a87a; }
 
+    .pet-tab .delete-icon {
+      font-size: 11px;
+      background: #fff0e0;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: 2px;
+      border: 1px solid #f5c9a8;
+      cursor: pointer;
+      transition: all 0.1s;
+      flex-shrink: 0;
+      color: #b07a56;
+      line-height: 1;
+    }
+
+    .pet-tab .delete-icon:hover { background: #ffd4d4; border-color: #e88; }
+    .pet-tab.active .delete-icon { background: #ffeacb; border-color: #e0a87a; }
+
     .add-pet-btn {
       background: #e8f0e0;
       border: 2px dashed #a8c090;
@@ -521,23 +542,6 @@
     }
 
     .save-btn:active { transform: translateY(5px); box-shadow: 0 3px 0 #d3844b, 0 6px 16px #fcc49e; }
-
-    .legend {
-      display: flex;
-      gap: 8px;
-      font-size: 11px;
-      color: #b08663;
-      justify-content: center;
-      margin-top: 10px;
-      flex-wrap: wrap;
-    }
-
-    .legend span {
-      background: #fff5e9;
-      padding: 3px 10px;
-      border-radius: 30px;
-      border: 1px solid #ffdcc2;
-    }
 
     .footer-actions {
       display: flex;
@@ -926,11 +930,6 @@
     <!-- 保存按钮（打卡视图下显示） -->
     <button class="save-btn" id="saveBtn"><span>📝</span> 保存打卡</button>
 
-    <!-- 图例（打卡视图下显示） -->
-    <div class="legend" id="legendBar">
-      <span>🍗 喂食</span><span>💧 换水</span><span>💩 排便</span><span>🛁 泡澡</span><span>😷 肠炎</span><span>🧠 脑炎</span><span>👁️ 蒙眼</span><span>💊 用药</span>
-    </div>
-
     <div class="footer-actions">
       <button class="clear-history" id="clearAll">🗑️ 清空当前蛙全部记录</button>
     </div>
@@ -1038,7 +1037,6 @@
       const overviewPanel = document.getElementById('overviewPanel');
       const overviewDateSpan = document.getElementById('overviewDate');
       const overviewList = document.getElementById('overviewList');
-      const legendBar = document.getElementById('legendBar');
       const viewCheckinBtn = document.getElementById('viewCheckinBtn');
       const viewOverviewBtn = document.getElementById('viewOverviewBtn');
 
@@ -1141,7 +1139,6 @@
           detailPanel.style.display = 'block';
           overviewPanel.classList.remove('visible');
           saveBtn.style.display = 'flex';
-          legendBar.style.display = 'flex';
         } else {
           viewOverviewBtn.classList.add('active');
           viewCheckinBtn.classList.remove('active');
@@ -1149,7 +1146,6 @@
           detailPanel.style.display = 'none';
           overviewPanel.classList.add('visible');
           saveBtn.style.display = 'none';
-          legendBar.style.display = 'none';
         }
         renderCalendar();
         if (view === 'checkin') {
@@ -1224,6 +1220,7 @@
             </div>
             <span class="pet-name">${pet.name}</span>
             <span class="edit-icon" data-pet-id="${pet.id}" title="更换图标">✎</span>
+            <span class="delete-icon" data-pet-id="${pet.id}" title="删除这只蛙">🗑</span>
           `;
           tab.addEventListener('click', (e) => {
             if (e.target.classList.contains('edit-icon')) return;
@@ -1244,6 +1241,27 @@
           editIcon.addEventListener('click', (e) => {
             e.stopPropagation();
             openIconPicker(pet.id);
+          });
+          const deleteIcon = tab.querySelector('.delete-icon');
+          deleteIcon.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (pets.length <= 1) {
+              showToast('至少保留一只蛙蛙哦～');
+              return;
+            }
+            if (!confirm(`确定要删除「${pet.name}」吗？\nTA 的所有打卡记录也将一并删除，此操作不可恢复！`)) return;
+            pets = pets.filter(p => p.id !== pet.id);
+            delete records[pet.id];
+            if (currentPetId === pet.id) {
+              currentPetId = pets[0].id;
+            }
+            selectedDateStr = getTodayStr();
+            const today = new Date();
+            currentYear = today.getFullYear();
+            currentMonth = today.getMonth();
+            renderAll();
+            saveToStorage();
+            showToast(`🗑️ 已删除「${pet.name}」`);
           });
           petSelector.appendChild(tab);
         });
